@@ -1,74 +1,43 @@
-/venv
-/.idea
-/.*
-/myenv
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
 
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.coverage
-.tox/
-.nox/
-.coverage.*
-*.cover
-.hypothesis/
-
-# Django stuff:
+# Local development settings
 *.log
-local_settings.py
+*.sqlite3
+db.sqlite3
+media/
 
-# Flask stuff:
-instance/
-.webassets-cache
+# Static files
+staticfiles/
 
-# Scrapy stuff:
-.scrapy
+# Secret keys
+*.env
 
-# Sphinx documentation
-docs/_build/
+# Virtual environment
+venv/
+.env/
 
-# Jupyter Notebook
-.ipynb_checkpoints
+# IDE files
+.idea/
+.vscode/
 
-# pyenv
-.python-version
+# Compiled Python files
+*.pyc
 
-# celery beat schedule file
-celerybeat-schedule
+# macOS
+.DS_Store
 
-# SageMath parsed files
-*.sage.py
+# Byte-compiled files for Django translations
+*.mo
 
-# Environments
-.env
+# Python bytecode cache
+__pycache__/
+*.pyc
+
+# Coverage reports
+htmlcov/
+
+# Temporary files
+*.swp
+*~
