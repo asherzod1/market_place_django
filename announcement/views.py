@@ -9,7 +9,6 @@ from announcement.serializers import TransportSerializer, AnnouncementSerializer
 
 # Create your views here.
 class TransportViewSet(ModelViewSet):
-    permission_classes = [IsAuthenticated]
     queryset = Transports.objects.all()
     serializer_class = TransportSerializer
 
@@ -17,4 +16,3 @@ class TransportViewSet(ModelViewSet):
 class AnnouncementViewSet(ModelViewSet):
     queryset = Announcement.objects.all()
     serializer_class = AnnouncementSerializer
-    permission_classes = [IsAuthenticated]
