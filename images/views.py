@@ -1,3 +1,4 @@
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
 from images.models import Images
@@ -9,3 +10,4 @@ from images.serializers import ImageSerializer
 class ImageViewSet(ModelViewSet):
     queryset = Images.objects.all()
     serializer_class = ImageSerializer
+    permission_classes = [IsAuthenticated]
