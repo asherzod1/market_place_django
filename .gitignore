@@ -1,5 +1,9 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+/announcement/__pycache__/
+/images/__pycache__/
+/ijara/__pycache__/
+/users/__pycache__/
 *.py[cod]
 
 # Local development settings
