@@ -10,6 +10,7 @@ media/
 
 # Static files
 staticfiles/
+/media
 
 # Secret keys
 *.env
