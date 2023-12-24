@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-!0_op@vyj$6_1z4(7#(lek5-x!=ch*m-r5__5s)&9#22nydk!0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost:3000", "178.128.154.43"]
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -158,6 +158,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = '/root/market_place_django/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
