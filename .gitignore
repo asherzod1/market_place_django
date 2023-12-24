@@ -23,18 +23,8 @@ venv/
 .idea/
 .vscode/
 
-# Compiled Python files
-*.pyc
-
 # macOS
 .DS_Store
-
-# Byte-compiled files for Django translations
-*.mo
-
-# Python bytecode cache
-__pycache__/
-*.pyc
 
 # Coverage reports
 htmlcov/
@@ -42,3 +32,9 @@ htmlcov/
 # Temporary files
 *.swp
 *~
+
+# Compiled Python files
+*.pyc
+
+# Byte-compiled files for Django translations
+*.mo
