@@ -1,1 +1,45 @@
-/venv
+# Byte-compiled / optimized / DLL files
+__pycache__/
+/announcement/__pycache__/
+/images/__pycache__/
+/ijara/__pycache__/
+/users/__pycache__/
+*.py[cod]
+
+# Local development settings
+*.log
+*.sqlite3
+db.sqlite3
+media/
+
+# Static files
+staticfiles/
+/media
+
+# Secret keys
+*.env
+
+# Virtual environment
+myenv/
+venv/
+.env/
+
+# IDE files
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# Coverage reports
+htmlcov/
+
+# Temporary files
+*.swp
+*~
+
+# Compiled Python files
+*.pyc
+
+# Byte-compiled files for Django translations
+*.mo
