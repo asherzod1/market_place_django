@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from announcement.models import Transports, Announcement
+from announcement.models import Transports, Announcement, Like, Comment
 from images.serializers import ImageSerializer
 
 
@@ -16,4 +16,18 @@ class AnnouncementSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Announcement
+        fields = "__all__"
+
+
+class LikeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Like
+        fields = "__all__"
+
+
+class CommentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Comment
         fields = "__all__"

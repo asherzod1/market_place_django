@@ -1,13 +1,15 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.mixins import ListModelMixin
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from announcement.models import Transports, Announcement
-from announcement.serializers import TransportSerializer, AnnouncementSerializer
+from announcement.models import Transports, Announcement, Like, Comment
+from announcement.serializers import TransportSerializer, AnnouncementSerializer, LikeSerializer, CommentSerializer
 from images.models import Images
 
 
@@ -22,6 +24,19 @@ class AnnouncementViewSet(ModelViewSet):
     queryset = Announcement.objects.all()
     serializer_class = AnnouncementSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    ordering_fields = ['total_price', "price_for_one", "appartment_status"]
+    search_fields = ['title', 'description', "address"]
+    filterset_fields = {
+        'partnership': ["exact"],
+        'need_people_count': ["exact"],
+        'room_count': ["exact"],
+        'conditioner': ["exact"],
+        'washing_machine': ["exact"],
+        'price_for_one': ['gte', 'lte'],
+        'total_price': ['gte', 'lte'],
+        'appartment_status': ['gte', 'lte'],
+    }
 
     def create(self, request, *args, **kwargs):
         request.data["user"] = request.user.id
@@ -55,3 +70,30 @@ class SelfAnnouncementViewSet(ListModelMixin, GenericViewSet):
         queryset = queryset.filter(user=self.request.user)
         return queryset
 
+
+class LikeViewSet(ModelViewSet):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        request.data["user"] = request.user.id
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class CommentViewSet(ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        request.data["user"] = request.user.id
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
