@@ -84,6 +84,11 @@ class LikeViewSet(ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(user=self.request.user)
+        return queryset
+
 
 class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
