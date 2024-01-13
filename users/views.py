@@ -4,23 +4,34 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, UpdateModelMixin
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.viewsets import GenericViewSet
 
-from users.serializer import UserCreateSerializer, UserLoginSerializer, UserSerializer
+from users.serializer import UserCreateSerializer, UserLoginSerializer, UserSerializer, UserUpdateSerializer
 
 User = get_user_model()
 
 
-class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
+class UserViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
     queryset = User.objects.all()
     lookup_field = "pk"
 
-    def get_queryset(self, *args, **kwargs):
-        assert isinstance(self.request.user.id, int)
-        return self.queryset.filter(id=self.request.user.id)
+    def get_serializer(self, *args, **kwargs):
+        if self.request.method == "PUT":
+            return UserUpdateSerializer()
+        return super().get_serializer(*args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        if request.user == self.get_object():
+            return super().update(request, *args, **kwargs)
+        return Response(
+            status=400,
+            data={"message": "You can't update, because you are not this user. You can update your account"}
+        )
 
     @action(detail=False)
     def me(self, request):

@@ -35,3 +35,9 @@ class UserCreateSerializer(serializers.ModelSerializer):
 class UserLoginSerializer(serializers.Serializer):
     phone_number = serializers.CharField()
     password = serializers.CharField()
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['name', 'first_name', 'last_name', 'email']
