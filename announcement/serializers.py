@@ -20,10 +20,18 @@ class AnnouncementSerializer(serializers.ModelSerializer):
 
 
 class LikeSerializer(serializers.ModelSerializer):
+    announcement = AnnouncementSerializer(read_only=True)
 
     class Meta:
         model = Like
         fields = "__all__"
+
+
+class CreateLikeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Like
+        fields = ["created", "announcement"]
 
 
 class CommentSerializer(serializers.ModelSerializer):
