@@ -1,5 +1,6 @@
 from django.contrib import admin
 from announcement.models import Announcement, Transports, Like, Comment
+from images.models import Images
 
 
 # Register your models here.
@@ -25,3 +26,9 @@ class AnnouncementAdmin(admin.ModelAdmin):
 class AnnouncementAdmin(admin.ModelAdmin):
     list_display_links = ["id"]
     list_display = ["id", "created", "user", "announcement"]
+
+
+@admin.register(Images)
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display_links = ["id"]
+    list_display = ["id", "name", "uuid", "image"]
