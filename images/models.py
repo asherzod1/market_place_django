@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 
 def image_upload_path(instance, filename):
-    return f"media/images/{instance.uuid}/{filename}"
+    return f"images/{instance.uuid}/{filename}"
 
 
 class Images(models.Model):
