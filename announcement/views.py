@@ -1,3 +1,4 @@
+from django.db.models import F
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
@@ -38,6 +39,20 @@ class AnnouncementViewSet(ModelViewSet):
         'total_price': ['gte', 'lte'],
         'appartment_status': ['gte', 'lte'],
     }
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        ordering = self.request.query_params.get('ordering', None)
+        if ordering is not None:
+            if ordering.endswith('_reverse'):
+                queryset = queryset.order_by(F(ordering[:-8]).desc())
+            else:
+                queryset = queryset.order_by(ordering)
+
+        return queryset
+
+
+
 
     def create(self, request, *args, **kwargs):
         request.data["user"] = request.user.id
