@@ -27,7 +27,11 @@ class AnnouncementViewSet(ModelViewSet):
     serializer_class = AnnouncementSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    ordering_fields = ['total_price', "price_for_one", "appartment_status"]
+    ordering_fields = [
+        'total_price', 'total_price_reverse',
+        'price_for_one', 'price_for_one_reverse',
+        'appartment_status', 'appartment_status_reverse',
+    ]
     search_fields = ['title', 'description', "address"]
     filterset_fields = {
         'partnership': ["exact"],
