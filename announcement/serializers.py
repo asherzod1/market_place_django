@@ -31,7 +31,7 @@ class CreateLikeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Like
-        fields = ["created", "announcement"]
+        fields = ["announcement", "user"]
 
 
 class CommentSerializer(serializers.ModelSerializer):

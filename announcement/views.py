@@ -9,7 +9,8 @@ from rest_framework.mixins import ListModelMixin
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from announcement.models import Transports, Announcement, Like, Comment
-from announcement.serializers import TransportSerializer, AnnouncementSerializer, LikeSerializer, CommentSerializer
+from announcement.serializers import TransportSerializer, AnnouncementSerializer, LikeSerializer, CommentSerializer, \
+    CreateLikeSerializer
 from images.models import Images
 
 
@@ -78,7 +79,7 @@ class LikeViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         request.data["user"] = request.user.id
-        serializer = self.get_serializer(data=request.data)
+        serializer = CreateLikeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
