@@ -161,3 +161,31 @@ class ProxyView(APIView):
             return JsonResponse(data)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+
+    def post(self, request, *args, **kwargs):
+        headers = {
+            'Accept': '*/*',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Connection': 'keep-alive',
+            'Cookie': 'full_version=1; city[key]=tashkent; lang=en; _ga=GA1.1.1646358430.1706364508; __gads=ID=9f2c0369ba9bcf63:T=1706364507:RT=1706364507:S=ALNI_Mb4Vq7N_H5hWevaofaqd8CMUi7SaQ; __gpi=UID=00000d4aae391291:T=1706364507:RT=1706364507:S=ALNI_MZ2-7rqdZNUiUcJZOoYOVAsSCVtSw; _ga_W8DR0B6NSF=GS1.1.1706364507.1.0.1706364512.55.0.0',
+            'Referer': 'https://uz.easyway.info/en/cities/tashkent/routes',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'X-Requested-With': 'XMLHttpRequest',
+            'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Linux"',
+        }
+        url = request.data.get('url')
+        data = request.data.copy()
+        data.pop('url', None)
+        if not url:
+            return JsonResponse({'error': 'URL parameter is missing in the request data'}, status=400)
+        try:
+            response = requests.post(url, data=data, headers=headers)
+            data = response.json()
+            return JsonResponse(data)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
