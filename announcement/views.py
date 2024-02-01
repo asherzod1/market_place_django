@@ -58,24 +58,39 @@ class AnnouncementViewSet(ModelViewSet):
 
         return queryset
 
+    def filter_images(self, image_uuids):
+        try:
+            return Images.objects.filter(uuid__in=image_uuids)
+        except TypeError:
+            raise ValueError("Images not found. Please send image UUIDs as a list.")
+
+    def create_transports(self, transport_data):
+        transports = []
+        for item in transport_data:
+            transport, created = Transports.objects.get_or_create(name=item.get("name"), type=item.get("type"))
+            transports.append(transport)
+        return transports
+
     def create(self, request, *args, **kwargs):
         request.data["user"] = request.user.id
+
         serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
         try:
             images_uuid = request.data.get("images", [])
-            images = Images.objects.filter(uuid__in=images_uuid)
-        except TypeError as e:
-            return Response("Images not found, Please send images uuid as list", status=status.HTTP_400_BAD_REQUEST)
-        try:
+            images = self.filter_images(images_uuid)
+
             transports_ids = request.data.get("transports", [])
-            transports = Transports.objects.get_or_create(name__in=transports_ids)
-        except TypeError as e:
-            return Response("Transports not found, Please send transports id as list", status=status.HTTP_400_BAD_REQUEST)
-        serializer.is_valid(raise_exception=True)
+            transports = self.create_transports(transports_ids)
+        except ValueError as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+
         self.perform_create(serializer)
         created_instance = serializer.instance
         created_instance.images.set(images)
         created_instance.transports.set(transports)
+
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
