@@ -13,6 +13,7 @@ from rest_framework.mixins import ListModelMixin
 from announcement.models import Transports, Announcement, Like, Comment
 from announcement.serializers import TransportSerializer, AnnouncementSerializer, LikeSerializer, CommentSerializer, \
     CreateLikeSerializer, CreateCommentSerializer
+from announcement.utilits import CustomPagination
 from images.models import Images
 
 
@@ -27,6 +28,7 @@ class AnnouncementViewSet(ModelViewSet):
     queryset = Announcement.objects.all()
     serializer_class = AnnouncementSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     ordering_fields = [
         'total_price', 'total_price_reverse',
@@ -56,9 +58,6 @@ class AnnouncementViewSet(ModelViewSet):
 
         return queryset
 
-
-
-
     def create(self, request, *args, **kwargs):
         request.data["user"] = request.user.id
         serializer = self.get_serializer(data=request.data)
@@ -85,6 +84,7 @@ class SelfAnnouncementViewSet(ListModelMixin, GenericViewSet):
     queryset = Announcement.objects.all()
     serializer_class = AnnouncementSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -129,6 +129,20 @@ class CommentViewSet(ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        announcement_id = request.GET.get("announcement_id")
+        if announcement_id:
+            queryset = queryset.filter(announcement_id=announcement_id)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class ProxyView(APIView):
