@@ -68,7 +68,7 @@ class AnnouncementViewSet(ModelViewSet):
             return Response("Images not found, Please send images uuid as list", status=status.HTTP_400_BAD_REQUEST)
         try:
             transports_ids = request.data.get("transports", [])
-            transports = Transports.objects.filter(id__in=transports_ids)
+            transports = Transports.objects.get_or_create(name__in=transports_ids)
         except TypeError as e:
             return Response("Transports not found, Please send transports id as list", status=status.HTTP_400_BAD_REQUEST)
         serializer.is_valid(raise_exception=True)
