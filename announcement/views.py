@@ -94,6 +94,33 @@ class AnnouncementViewSet(ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        try:
+            images_uuid = request.data.get("images", [])
+            images = self.filter_images(images_uuid)
+
+            transports_ids = request.data.get("transports", [])
+            transports = self.create_transports(transports_ids)
+        except ValueError as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_update(serializer)
+
+        created_instance = serializer.instance
+        created_instance.images.set(images)
+        created_instance.transports.set(transports)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+
 
 class SelfAnnouncementViewSet(ListModelMixin, GenericViewSet):
     queryset = Announcement.objects.all()
