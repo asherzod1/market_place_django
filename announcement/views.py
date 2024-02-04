@@ -50,9 +50,13 @@ class AnnouncementViewSet(ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         ordering = self.request.query_params.get('ordering', None)
+        transport_names = self.request.GET.getlist('transports[]', None)
+        if transport_names:
+            queryset = queryset.filter(transports__name__in=transport_names).distinct()
         if ordering is not None:
             if ordering.endswith('_reverse'):
-                queryset = queryset.order_by(F(ordering[:-8]).desc())
+                field_name = ordering[:-8]
+                queryset = queryset.order_by(F(field_name).desc())
             else:
                 queryset = queryset.order_by(ordering)
 
