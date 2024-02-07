@@ -23,6 +23,7 @@ class TransportTypes(models.TextChoices):
 class Transports(models.Model):
     name = models.CharField(max_length=50, unique=True)
     type = models.CharField(choices=TransportTypes.choices, max_length=20)
+    ri = models.CharField(max_length=10, null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} {self.type}"

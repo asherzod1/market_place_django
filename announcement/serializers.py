@@ -7,7 +7,7 @@ from images.serializers import ImageSerializer
 class TransportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transports
-        fields = ["name", "type", "id"]
+        fields = ["name", "type", "id", "ri"]
 
 
 class AnnouncementSerializer(serializers.ModelSerializer):
