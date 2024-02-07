@@ -29,9 +29,9 @@ class UserViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
 
     def update(self, request, *args, **kwargs):
         if request.user == self.get_object():
-            images_uuid = request.data.get("images", [])
-            images = self.filter_images(images_uuid)
-            request.user.images.set(images)
+            # images_uuid = request.data.get("images", [])
+            # images = self.filter_images(images_uuid)
+            # request.user.images.set(images)
             return super().update(request, *args, **kwargs)
         return Response(
             status=400,
