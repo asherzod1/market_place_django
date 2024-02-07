@@ -9,7 +9,9 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.viewsets import GenericViewSet
 
-from users.serializer import UserCreateSerializer, UserLoginSerializer, UserSerializer, UserUpdateSerializer
+from images.serializers import ImageSerializer
+from users.serializer import UserCreateSerializer, UserLoginSerializer, UserSerializer, UserUpdateSerializer, \
+    UserMeSerializer
 
 User = get_user_model()
 
@@ -38,8 +40,10 @@ class UserViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
 
     @action(detail=False)
     def me(self, request):
-        serializer = UserSerializer(request.user, context={"request": request})
-        return Response(status=status.HTTP_200_OK, data=serializer.data)
+        serializer = UserMeSerializer(request.user)
+        images = request.user.images.all()
+        images_serializer = ImageSerializer(images, many=True)
+        return Response(status=status.HTTP_200_OK, data={"user": serializer.data, "images": images_serializer.data})
 
 
 class UserCreateView(CreateAPIView):
