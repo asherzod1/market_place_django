@@ -41,9 +41,9 @@ class UserViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     @action(detail=False)
     def me(self, request):
         serializer = UserMeSerializer(request.user)
-        images = request.user.images.all()
-        images_serializer = ImageSerializer(images, many=True)
-        return Response(status=status.HTTP_200_OK, data={"user": serializer.data, "images": images_serializer.data})
+        # images = request.user.images.all()
+        # images_serializer = ImageSerializer(images, many=True)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
 
 
 class UserCreateView(CreateAPIView):
