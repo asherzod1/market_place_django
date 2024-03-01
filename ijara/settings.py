@@ -133,6 +133,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://test.rent-home.uz",
+    "https://rent-home.uz",
 ]
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
