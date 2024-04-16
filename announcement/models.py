@@ -48,6 +48,7 @@ class Announcement(models.Model):
     description = models.TextField(null=True, blank=True)
     conditioner = models.BooleanField(default=False)
     washing_machine = models.BooleanField(default=False)
+    fridge = models.BooleanField(default=False)
     transports = models.ManyToManyField(Transports, related_name="announcements")
 
 
