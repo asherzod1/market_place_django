@@ -42,6 +42,7 @@ class AnnouncementViewSet(ModelViewSet):
         'room_count': ["exact"],
         'conditioner': ["exact"],
         'washing_machine': ["exact"],
+        'fridge': ["exact"],
         'price_for_one': ['gte', 'lte'],
         'total_price': ['gte', 'lte'],
         'appartment_status': ['gte', 'lte'],
