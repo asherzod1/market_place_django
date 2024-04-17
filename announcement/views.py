@@ -12,7 +12,7 @@ from rest_framework.mixins import ListModelMixin
 
 from announcement.models import Transports, Announcement, Like, Comment
 from announcement.serializers import TransportSerializer, AnnouncementSerializer, LikeSerializer, CommentSerializer, \
-    CreateLikeSerializer, CreateCommentSerializer
+    CreateLikeSerializer, CreateCommentSerializer, EmptySerializer
 from announcement.utilits import CustomPagination
 from images.models import Images
 
@@ -194,6 +194,7 @@ class CommentViewSet(ModelViewSet):
 
 
 class ProxyView(APIView):
+    serializer_class = EmptySerializer
 
     def get(self, request, *args, **kwargs):
         url = request.GET.get('url')

@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from announcement.models import Transports, Announcement, Like, Comment
 from images.serializers import ImageSerializer
+from users.serializer import UserSerializer, UserCreateSerializer, UserMeSerializer
 
 
 class TransportSerializer(serializers.ModelSerializer):
@@ -35,6 +36,7 @@ class CreateLikeSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    user = UserMeSerializer(read_only=True)
 
     class Meta:
         model = Comment
@@ -46,3 +48,7 @@ class CreateCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ["announcement", "user", "comment"]
+
+
+class EmptySerializer(serializers.Serializer):
+    pass
