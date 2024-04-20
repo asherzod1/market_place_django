@@ -45,6 +45,11 @@ class User(AbstractUser):
         # Other fields...
     )
 
+    images = models.ManyToManyField(
+        'images.Images',
+        related_name="users"
+    )
+
     def get_absolute_url(self) -> str:
         """Get URL for user's detail view.
 

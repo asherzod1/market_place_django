@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model, authenticate
+from django.db import transaction
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import AuthenticationFailed
@@ -9,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.viewsets import GenericViewSet
 
+from images.models import Images
 from images.serializers import ImageSerializer
 from users.serializer import UserCreateSerializer, UserLoginSerializer, UserSerializer, UserUpdateSerializer, \
     UserMeSerializer
@@ -22,6 +24,12 @@ class UserViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     queryset = User.objects.all()
     lookup_field = "pk"
 
+    def filter_images(self, image_uuids):
+        try:
+            return Images.objects.filter(uuid__in=image_uuids)
+        except TypeError:
+            raise ValueError("Images not found. Please send image UUIDs as a list.")
+
     def get_serializer(self, *args, **kwargs):
         if self.request.method == "PUT":
             kwargs['data'] = self.request.data  # Ensure the data is passed for validation
@@ -30,15 +38,26 @@ class UserViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
         return super().get_serializer(*args, **kwargs)
 
     def update(self, request, *args, **kwargs):
-        if request.user == self.get_object():
-            # images_uuid = request.data.get("images", [])
-            # images = self.filter_images(images_uuid)
-            # request.user.images.set(images)
-            return super().update(request, *args, **kwargs)
-        return Response(
-            status=400,
-            data={"message": "You can't update, because you are not this user. You can update your account"}
-        )
+        if request.user != self.get_object():
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"message": "You can't update because you are not this user. You can update your account"}
+            )
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            self.perform_update(serializer)
+            with transaction.atomic():
+                self.perform_update(serializer)
+
+                # Handle image UUIDs
+                images_uuid = request.data.get("images", [])
+                images = self.filter_images(images_uuid)
+                request.user.images.set(images)
+
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False)
     def me(self, request):
