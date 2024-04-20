@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from images.models import Images
 from images.serializers import ImageSerializer
 from users.models import User as UserType
 
@@ -24,6 +25,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = User
         fields = ['name', 'phone_number', 'password']
 
+    def filter_images(self, image_uuids):
+        try:
+            return Images.objects.filter(uuid__in=image_uuids)
+        except TypeError:
+            raise ValueError("Images not found. Please send image UUIDs as a list.")
+
     def create(self, validated_data):
         user = User.objects.create(
             phone_number=validated_data['phone_number'],
@@ -31,6 +38,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
         )
         user.set_password(validated_data['password'])
         user.save()
+        if 'images' in validated_data:
+            user.images.set(self.filter_images(validated_data['images']))
         return user
 
 

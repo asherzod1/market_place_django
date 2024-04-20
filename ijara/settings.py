@@ -134,6 +134,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.test.rent-home.uz",
     "https://rent-home.uz",
     "https://www.rent-home.uz",
+    "https://rent-home-steel.vercel.app",
 ]
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
