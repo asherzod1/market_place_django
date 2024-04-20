@@ -24,7 +24,9 @@ class UserViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
 
     def get_serializer(self, *args, **kwargs):
         if self.request.method == "PUT":
-            return UserUpdateSerializer()
+            kwargs['data'] = self.request.data  # Ensure the data is passed for validation
+            kwargs['context'] = {'request': self.request}  # Pass request context if needed
+            return UserUpdateSerializer(*args, **kwargs)
         return super().get_serializer(*args, **kwargs)
 
     def update(self, request, *args, **kwargs):
