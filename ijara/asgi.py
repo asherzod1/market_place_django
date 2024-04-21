@@ -12,12 +12,16 @@ import os
 from channels.auth import AuthMiddlewareStack
 
 from .middlewares import JwtAuthMiddlewareStack
-from .socket_urls import websocket_urlpatterns
 
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
+import django
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ijara.settings')
+
+django.setup()
+
+from .socket_urls import websocket_urlpatterns
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
