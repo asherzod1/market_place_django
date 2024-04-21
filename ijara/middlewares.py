@@ -3,9 +3,7 @@ from channels.db import database_sync_to_async
 from channels.middleware import BaseMiddleware
 from channels.auth import AuthMiddlewareStack
 from urllib.parse import parse_qs
-
-from django.conf import settings
-
+from .settings import SECRET_KEY
 
 
 @database_sync_to_async
@@ -34,7 +32,7 @@ class JwtAuthMiddleware(BaseMiddleware):
         token = query_string.get('token', [None])[0]
         if token:
             try:
-                decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+                decoded_data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
                 user = await get_user(decoded_data['user_id'])
                 scope['user'] = user if user else {}
             except jwt.ExpiredSignatureError:
