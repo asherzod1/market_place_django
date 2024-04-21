@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/3.2/howto/deployment/asgi/
 
 import os
 
+from channels.auth import AuthMiddlewareStack
 
 from .middlewares import JwtAuthMiddlewareStack
 from .socket_urls import websocket_urlpatterns

@@ -8,9 +8,23 @@ from django.conf import settings
 
 from .settings import SECRET_KEY
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AnonymousUser
 
 User = get_user_model()
+
+
+@database_sync_to_async
+def get_user(user_id):
+    from django.contrib.auth.models import AnonymousUser
+
+    try:
+        return User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return AnonymousUser()
+
+
+def get_anonymous_user():
+    from django.contrib.auth.models import AnonymousUser
+    return AnonymousUser()
 
 
 class JwtAuthMiddleware(BaseMiddleware):
@@ -24,23 +38,17 @@ class JwtAuthMiddleware(BaseMiddleware):
         if token:
             try:
                 decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-                user = await self.get_user(decoded_data['user_id'])
-                scope['user'] = user if user else AnonymousUser()
+                user = await get_user(decoded_data['user_id'])
+                scope['user'] = user if user else {}
             except jwt.ExpiredSignatureError:
-                scope['user'] = AnonymousUser()
+                scope['user'] = get_anonymous_user()
             except jwt.DecodeError:
-                scope['user'] = AnonymousUser()
+                scope['user'] = get_anonymous_user()
             except Exception as e:
-                scope['user'] = AnonymousUser()
+                scope['user'] = get_anonymous_user()
                 print(f"JWT decode error: {e}")
         return await super().__call__(scope, receive, send)
 
-    @database_sync_to_async
-    def get_user(self, user_id):
-        try:
-            return User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            return None
 
 
 def JwtAuthMiddlewareStack(inner):
