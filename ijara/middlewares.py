@@ -6,7 +6,7 @@ from urllib.parse import parse_qs
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-
+from django.contrib.auth.models import AnonymousUser
 
 User = get_user_model()
 
@@ -23,13 +23,13 @@ class JwtAuthMiddleware(BaseMiddleware):
             try:
                 decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
                 user = await self.get_user(decoded_data['user_id'])
-                scope['user'] = user if user else None
+                scope['user'] = user if user else AnonymousUser()
             except jwt.ExpiredSignatureError:
-                scope['user'] = None
+                scope['user'] = AnonymousUser()
             except jwt.DecodeError:
-                scope['user'] = None
+                scope['user'] = AnonymousUser()
             except Exception as e:
-                scope['user'] = None
+                scope['user'] = AnonymousUser()
                 print(f"JWT decode error: {e}")
         return await super().__call__(scope, receive, send)
 
