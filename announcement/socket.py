@@ -12,6 +12,7 @@ def get_serialized_data(db_result):
     serializer = CommentSerializer(db_result)
     return serializer.data
 
+
 class AnnouncementComments(AsyncWebsocketConsumer):
     announcement_id = None
     group_name = None

@@ -61,7 +61,7 @@ class UserViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
 
     @action(detail=False)
     def me(self, request):
-        serializer = UserMeSerializer(request.user)
+        serializer = UserMeSerializer(request.user, context={'request': request})
         # images = request.user.images.all()
         # images_serializer = ImageSerializer(images, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
