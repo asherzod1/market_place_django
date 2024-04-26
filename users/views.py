@@ -1,4 +1,7 @@
+import random
+
 from django.contrib.auth import get_user_model, authenticate
+from django.core.cache import cache
 from django.db import transaction
 from rest_framework import status
 from rest_framework.decorators import action
@@ -11,9 +14,9 @@ from rest_framework.authtoken.models import Token
 from rest_framework.viewsets import GenericViewSet
 
 from images.models import Images
-from images.serializers import ImageSerializer
 from users.serializer import UserCreateSerializer, UserLoginSerializer, UserSerializer, UserUpdateSerializer, \
-    UserMeSerializer
+    UserMeSerializer, VerificationPhoneSerializer, VerificationCodeSerializer
+from users.utilits import check_rate_limit, SmsOtp, verify_otp
 
 User = get_user_model()
 
@@ -73,6 +76,18 @@ class UserCreateView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserCreateSerializer
 
+    def create(self, request, *args, **kwargs):
+        phone_number = request.data.get('phone_number')
+        user = User.objects.filter(phone_number=phone_number).first()
+        if not cache.get(f"verified_{phone_number}") and not user:
+            return Response({"error": "Phone number is not verified"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        cache.delete(f"verified_{phone_number}")
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
 
 class UserLoginView(GenericAPIView):
     serializer_class = UserLoginSerializer
@@ -90,3 +105,50 @@ class UserLoginView(GenericAPIView):
                 token, created = Token.objects.get_or_create(user=userr)
                 return Response({'token': token.key})
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class GetPhoneNumberVerification(GenericAPIView):
+    authentication_classes = []
+    permission_classes = []
+    serializer_class = VerificationPhoneSerializer
+
+    def post(self, request):
+        phone_number = request.data.get('phone_number')
+        if not phone_number:
+            return Response({"error": "Phone number is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not check_rate_limit(phone_number):
+            return Response({"message": "Rate limit exceeded"}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        user = User.objects.filter(phone_number=phone_number).first()
+        if user:
+            return Response({"message": "Phone number already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+        otp = str(random.randint(10000, 99999))
+        sms = SmsOtp(phone_number, otp)
+
+        try:
+            sms.send_otp()
+        except Exception as e:
+            return Response(
+                {"message": "SMS service bilan xatolik", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response({"phone_number": phone_number}, status=status.HTTP_200_OK)
+
+
+class VerificationCodeCheck(GenericAPIView):
+    authentication_classes = []
+    permission_classes = []
+    serializer_class = VerificationCodeSerializer
+
+    def post(self, request):
+        phone_number = request.data.get('phone_number')
+        otp = request.data.get('code')
+        if not phone_number or not otp:
+            return Response({"error": "Phone number and Code is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if verify_otp(phone_number, otp):
+            return Response({"message": "Phone number verified"}, status=status.HTTP_200_OK)
+        return Response({"message": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)

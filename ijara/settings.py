@@ -102,8 +102,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ijara',
-        'USER': 'ijara',
-        'PASSWORD': '1234',
+        'USER': 'postgres',
+        'PASSWORD': 'Lion5466.',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
@@ -133,6 +133,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://test.rent-home.uz",
     "https://www.test.rent-home.uz",
     "https://rent-home.uz",
+    "https://api.rent-home.uz",
     "https://www.rent-home.uz",
     "https://rent-home-steel.vercel.app",
 ]
@@ -198,3 +199,21 @@ CHANNEL_LAYERS = {
     },
 }
 
+# settings.py
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            # "PASSWORD": "IJARA_redis#password",  # Ensure Redis is password protected
+            # "SSL": True,  # Use SSL connection if possible
+        },
+    }
+}
+
+
+SMS_OTP_USERNAME = "sh.abdumutalov1@gmail.com"
+SMS_OTP_PASSWORD = "CSIYD3uYg0rFoxUnjm3o5p47yzi4zRgfOQcU1JcH"
+SMS_OTP_BASE_URL = "notify.eskiz.uz/api"

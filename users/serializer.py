@@ -61,3 +61,12 @@ class UserMeSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'name', 'first_name', 'last_name', 'email', 'phone_number', 'images']
+
+
+class VerificationPhoneSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=13, min_length=13)
+
+
+class VerificationCodeSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=13, min_length=13)
+    code = serializers.CharField(max_length=5)

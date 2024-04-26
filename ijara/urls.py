@@ -21,11 +21,13 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from announcement.views import ProxyView
-from users.views import UserCreateView, UserLoginView
+from users.views import UserCreateView, UserLoginView, GetPhoneNumberVerification, VerificationCodeCheck
 
 urlpatterns = [
     path("api/", include("ijara.api_urls")),
     path('api/proxy/', ProxyView.as_view(), name='proxy'),
+    path('verification/number', GetPhoneNumberVerification.as_view(), name='user_number_verification'),
+    path('verification/code', VerificationCodeCheck.as_view(), name='user_code_verification'),
     path('register/', UserCreateView.as_view(), name='user-register'),
     path('login/', UserLoginView.as_view(), name='user-login'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
