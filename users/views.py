@@ -125,6 +125,7 @@ class GetPhoneNumberVerification(GenericAPIView):
             return Response({"message": "Phone number already exists"}, status=status.HTTP_400_BAD_REQUEST)
 
         otp = str(random.randint(10000, 99999))
+        print(otp)
         sms = SmsOtp(phone_number, otp)
 
         try:

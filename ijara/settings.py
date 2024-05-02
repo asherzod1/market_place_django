@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "users",
     "images",
     "announcement",
+    "chat",
 ]
 
 MIDDLEWARE = [
@@ -102,8 +103,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ijara',
-        'USER': 'postgres',
-        'PASSWORD': 'Lion5466.',
+        'USER': 'ijara',
+        'PASSWORD': '1234',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
@@ -156,7 +157,7 @@ CORS_ALLOW_METHODS = (
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tashkent'
 
 USE_I18N = True
 

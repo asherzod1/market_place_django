@@ -66,7 +66,6 @@ class AnnouncementComments(AsyncWebsocketConsumer):
 
     # Receive message from room group
     async def chat_message(self, event):
-        print("CHAT")
         message = event['message']
 
         # Send message to WebSocket
