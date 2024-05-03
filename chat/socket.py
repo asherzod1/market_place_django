@@ -179,18 +179,6 @@ class Chat(AsyncWebsocketConsumer):
                 }
             )
 
-
-        # users_need_to_say_online = await database_sync_to_async(get_connected_users)(self.user.id)
-        #
-        # for user_id in users_need_to_say_online:
-        #     await self.channel_layer.group_send(
-        #         f'chat_for_user_{user_id}',
-        #         {
-        #             'type': 'say_online',
-        #             'message': self.user.id
-        #         }
-        #     )
-
         await self.accept()
 
     async def disconnect(self, close_code):

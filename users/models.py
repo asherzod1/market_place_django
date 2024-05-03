@@ -8,6 +8,8 @@ from users.managers import UserManager
 
 
 def validate_phone_number(value):
+    if not value.startswith('+'):
+        raise ValidationError(_('Phone number must start with +'))
     if not value.startswith('+998'):
         raise ValidationError(_('Phone number must start with +998'))
     if len(value) != 13:

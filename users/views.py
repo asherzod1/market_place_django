@@ -2,6 +2,7 @@ import random
 
 from django.contrib.auth import get_user_model, authenticate
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from rest_framework import status
 from rest_framework.decorators import action
@@ -14,6 +15,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.viewsets import GenericViewSet
 
 from images.models import Images
+from users.models import validate_phone_number
 from users.serializer import UserCreateSerializer, UserLoginSerializer, UserSerializer, UserUpdateSerializer, \
     UserMeSerializer, VerificationPhoneSerializer, VerificationCodeSerializer
 from users.utilits import check_rate_limit, SmsOtp, verify_otp
@@ -116,7 +118,10 @@ class GetPhoneNumberVerification(GenericAPIView):
         phone_number = request.data.get('phone_number')
         if not phone_number:
             return Response({"error": "Phone number is required"}, status=status.HTTP_400_BAD_REQUEST)
-
+        try:
+            validate_phone_number(phone_number)
+        except ValidationError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         if not check_rate_limit(phone_number):
             return Response({"message": "Rate limit exceeded"}, status=status.HTTP_429_TOO_MANY_REQUESTS)
 
