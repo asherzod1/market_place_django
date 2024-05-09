@@ -169,6 +169,8 @@ class Chat(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+        self.user.is_online = True
+        await self.user.asave()
 
         async for same_room_user_id in User.objects.filter(rooms__users=self.user.id).exclude(id=self.user.id).distinct().values_list("id", flat=True):
             await self.channel_layer.group_send(
@@ -182,6 +184,8 @@ class Chat(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
+        self.user.is_online = False
+        await self.user.asave()
         # Leave room group
         async for same_room_user_id in User.objects.filter(rooms__users=self.user.id).exclude(id=self.user.id).distinct().values_list("id", flat=True):
             await self.channel_layer.group_send(

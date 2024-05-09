@@ -30,6 +30,7 @@ class User(AbstractUser):
     email = EmailField(_("email address"), null=True, blank=True)
     phone_number = CharField(_("Phone number"), max_length=13, unique=True, validators=[validate_phone_number])
     username = None  # type: ignore
+    is_online = models.BooleanField(default=False)
 
     USERNAME_FIELD = "phone_number"
     REQUIRED_FIELDS = []
