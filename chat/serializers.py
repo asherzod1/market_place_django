@@ -11,7 +11,7 @@ class UserForChatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'phone_number', 'images']
+        fields = ['id', 'name', 'phone_number', 'images', 'is_online']
 
 
 class ChatRoomSerializer(serializers.ModelSerializer):
