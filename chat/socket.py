@@ -7,7 +7,7 @@ import json
 from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
 from .models import Message, ChatRoom
-from .serializers import MessageSendSerializer, ChatRoomCreatedSerializer
+from .serializers import MessageSendSerializer, ChatRoomCreatedSerializer, MessageIsReadSerializer
 
 User = get_user_model()
 
@@ -29,6 +29,12 @@ def get_connected_users(current_user_id):
         rooms__users=current_user_id
     ).exclude(id=current_user_id).distinct().values_list("id", flat=True)
     return connected_users
+
+
+def check_message_room(db_result, current_room_id):
+    message = db_result
+    room = message.room
+    return room.id == current_room_id
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -199,11 +205,16 @@ class Chat(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
+
+        # Read message
+        if text_data_json.get('type', None) == 'read':
+            return await self.read_message(text_data_json)
+        # End read message
+
+        # create room name
         message = text_data_json['message']
         sender_id = self.user.id
         receiver_id = text_data_json['receiver']
-
-        # create room name
         user_ids = [int(sender_id), int(receiver_id)]
         user_ids = sorted(user_ids)
         room_name = f"chat_room_{user_ids[0]}-{user_ids[1]}"
@@ -242,6 +253,69 @@ class Chat(AsyncWebsocketConsumer):
             {
                 'type': 'chat_message',
                 'message': serialized_obj
+            }
+        )
+
+    async def read_message(self, text_data_json):
+        ids = text_data_json.get('ids', None)
+        room_id = text_data_json['room_id']
+        if not room_id:
+            return await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'not_allowed',
+                    'status': "400",
+                    'message': 'Room id is required'
+                }
+            )
+        message_objs = Message.objects.filter(pk__in=ids)
+        first_message = await message_objs.afirst()
+        if not first_message:
+            return await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'not_allowed',
+                    'status': "404",
+                    'message': 'Message not found'
+                }
+            )
+        if not await sync_to_async(check_message_room)(first_message, room_id):
+            return await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'not_allowed',
+                    'status': "403",
+                    'message': 'You are not allowed to read this message, room id is not correct'
+                }
+            )
+        message_sender_id = text_data_json.get('sender', None)
+
+        await message_objs.aupdate(is_read=True)
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'read',
+                'message': {
+                    'is_read': 'true',
+                    'ids': ids,
+                    'room_id': room_id,
+                    'sender': message_sender_id,
+                    'receiver': self.user.id
+                }
+            }
+        )
+        receiver_group_name = f'chat_for_user_{message_sender_id}'
+        await self.channel_layer.group_send(
+            receiver_group_name,
+            {
+                'type': 'read',
+                'message': {
+                    'is_read': 'true',
+                    'ids': ids,
+                    'room_id': room_id,
+                    'sender': message_sender_id,
+                    'receiver': self.user.id
+                }
             }
         )
 
@@ -289,6 +363,15 @@ class Chat(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'room_name': self.room_name,
             'status': status,
+            'message': message,
+        }))
+
+    async def read(self, event):
+        message = event['message']
+
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({
+            'type': 'read',
             'message': message,
         }))
 

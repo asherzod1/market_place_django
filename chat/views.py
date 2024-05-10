@@ -1,4 +1,6 @@
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from chat.models import ChatRoom
@@ -25,4 +27,3 @@ class UserRoomsViewSet(ReadOnlyModelViewSet):
         """
         user = self.request.user
         return super().get_queryset().filter(users=user)
-
