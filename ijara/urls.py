@@ -20,12 +20,14 @@ from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from announcement.views import ProxyView
+from announcement.views import ProxyView, NearbyBuses, BusById
 from users.views import UserCreateView, UserLoginView, GetPhoneNumberVerification, VerificationCodeCheck
 
 urlpatterns = [
     path("api/", include("ijara.api_urls")),
-    path('api/proxy/', ProxyView.as_view(), name='proxy'),
+    # path('api/proxy/', ProxyView.as_view(), name='proxy'),
+    path('api/buses/', NearbyBuses.as_view(), name='buses'),
+    path('api/bus/', BusById.as_view(), name='bus'),
     path('verification/number', GetPhoneNumberVerification.as_view(), name='user_number_verification'),
     path('verification/code', VerificationCodeCheck.as_view(), name='user_code_verification'),
     path('register/', UserCreateView.as_view(), name='user-register'),

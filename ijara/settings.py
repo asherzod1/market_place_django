@@ -218,3 +218,6 @@ CACHES = {
 SMS_OTP_USERNAME = "sh.abdumutalov1@gmail.com"
 SMS_OTP_PASSWORD = "CSIYD3uYg0rFoxUnjm3o5p47yzi4zRgfOQcU1JcH"
 SMS_OTP_BASE_URL = "notify.eskiz.uz/api"
+
+
+BUS_API_SECRET_KEY = "It_is_the_key_you_don't_find_it_nBKnWuHskRrQH(@g"

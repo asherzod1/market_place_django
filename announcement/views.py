@@ -1,4 +1,10 @@
+from datetime import datetime, timedelta
+
+import pytz
 import requests
+from Crypto.Cipher.AES import block_size
+from Crypto.Util.Padding import unpad
+from django.conf import settings
 from django.db.models import F
 from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -9,6 +15,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.mixins import ListModelMixin
+
+from Crypto.Cipher import AES
+import base64
+import hashlib
 
 from announcement.models import Transports, Announcement, Like, Comment
 from announcement.serializers import TransportSerializer, AnnouncementSerializer, LikeSerializer, CommentSerializer, \
@@ -248,6 +258,128 @@ class ProxyView(APIView):
             return JsonResponse({'error': 'URL parameter is missing in the request data'}, status=400)
         try:
             response = requests.post(url, data=data, headers=headers)
+            data = response.json()
+            return JsonResponse(data)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+def decrypt(encrypted_time_str, key):
+    try:
+        key = hashlib.sha256(key.encode()).digest()
+        encrypted_time_str = base64.b64decode(encrypted_time_str)
+        iv = encrypted_time_str[:16]
+        encrypted_message = encrypted_time_str[16:]
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        decrypted_message = unpad(cipher.decrypt(encrypted_message), block_size)
+        return decrypted_message.decode()
+    except (ValueError, KeyError):
+        return "Decryption failed: invalid key or corrupted data"
+
+
+class NearbyBuses(APIView):
+    serializer_class = EmptySerializer
+
+    def post(self, request, *args, **kwargs):
+
+        data = request.data.copy()
+        key = data.get('key', None)
+        if not key:
+            return JsonResponse({'error': 'Bad request'}, status=400)
+
+        try:
+            decrypted_time_str = decrypt(key, settings.BUS_API_SECRET_KEY)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+        given_time_str = decrypted_time_str
+
+        try:
+            given_time = datetime.strptime(given_time_str, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=pytz.UTC)
+        except Exception as e:
+            return JsonResponse({'error': "Incorrect key format"}, status=400)
+        now = datetime.now(pytz.UTC)
+
+        # Calculate the time difference
+        time_difference = now - given_time
+        if abs(time_difference) > timedelta(minutes=1):
+            return JsonResponse({'error': 'Bad request'}, status=400)
+
+        url = f"https://uz.easyway.info/ajax/en/{data.get('city', '')}/nearby/{data.get('location_x', '')}/{data.get('location_y', '')}/{data.get('nearby', '')}"
+        if not url:
+            return JsonResponse({'error': 'URL parameter is missing'}, status=400)
+
+        headers = {
+            'Accept': '*/*',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Connection': 'keep-alive',
+            'Cookie': 'full_version=1; city[key]=tashkent; lang=en; _ga=GA1.1.1646358430.1706364508; __gads=ID=9f2c0369ba9bcf63:T=1706364507:RT=1706364507:S=ALNI_Mb4Vq7N_H5hWevaofaqd8CMUi7SaQ; __gpi=UID=00000d4aae391291:T=1706364507:RT=1706364507:S=ALNI_MZ2-7rqdZNUiUcJZOoYOVAsSCVtSw; _ga_W8DR0B6NSF=GS1.1.1706364507.1.0.1706364512.55.0.0',
+            'Referer': 'https://uz.easyway.info/en/cities/tashkent/routes',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'X-Requested-With': 'XMLHttpRequest',
+            'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Linux"',
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+            data = response.json()
+            return JsonResponse(data)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+class BusById(APIView):
+    serializer_class = EmptySerializer
+
+    def post(self, request, *args, **kwargs):
+        data = request.data.copy()
+        key = data.get('key', None)
+        if not key:
+            return JsonResponse({'error': 'Bad request'}, status=400)
+
+        try:
+            decrypted_time_str = decrypt(key, settings.BUS_API_SECRET_KEY)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+        given_time_str = decrypted_time_str
+        try:
+            given_time = datetime.strptime(given_time_str, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=pytz.UTC)
+        except Exception as e:
+            return JsonResponse({'error': "Incorrect key format"}, status=400)
+        now = datetime.now(pytz.UTC)
+
+        # Calculate the time difference
+        time_difference = now - given_time
+        if abs(time_difference) > timedelta(minutes=1):
+            return JsonResponse({'error': 'Bad request'}, status=400)
+
+        url = f"https://api.rent-home.uz/api/proxy/?url=https://uz.easyway.info/ajax/en/tashkent/routeInfo/{data.get('id', '')}"
+        if not url:
+            return JsonResponse({'error': 'URL parameter is missing'}, status=400)
+
+        headers = {
+            'Accept': '*/*',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Connection': 'keep-alive',
+            'Cookie': 'full_version=1; city[key]=tashkent; lang=en; _ga=GA1.1.1646358430.1706364508; __gads=ID=9f2c0369ba9bcf63:T=1706364507:RT=1706364507:S=ALNI_Mb4Vq7N_H5hWevaofaqd8CMUi7SaQ; __gpi=UID=00000d4aae391291:T=1706364507:RT=1706364507:S=ALNI_MZ2-7rqdZNUiUcJZOoYOVAsSCVtSw; _ga_W8DR0B6NSF=GS1.1.1706364507.1.0.1706364512.55.0.0',
+            'Referer': 'https://uz.easyway.info/en/cities/tashkent/routes',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'X-Requested-With': 'XMLHttpRequest',
+            'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Linux"',
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
             data = response.json()
             return JsonResponse(data)
         except Exception as e:
