@@ -292,21 +292,28 @@ class NearbyBuses(APIView):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
         given_time_str = decrypted_time_str
-
         try:
+            # Assuming given_time_str is in UTC
             given_time = datetime.strptime(given_time_str, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=pytz.UTC)
         except Exception as e:
             return JsonResponse({'error': "Incorrect key format"}, status=400)
-        now = datetime.now(pytz.UTC)
 
-        # Calculate the time difference
-        time_difference = now - given_time
+            # Convert given_time to Tashkent timezone
+        tashkent_timezone = pytz.timezone('Asia/Tashkent')
+        given_time_tashkent = given_time.astimezone(tashkent_timezone)
+
+        now_utc = datetime.now(pytz.UTC)
+        now_tashkent = now_utc.astimezone(tashkent_timezone)
+
+        # Calculate the time difference between given_time and now_tashkent in Tashkent time
+        time_difference = now_tashkent - given_time_tashkent
         if abs(time_difference) > timedelta(minutes=1):
             return JsonResponse({'error': 'Bad request'}, status=400)
 
+        if not data.get('city', None) or not data.get('location_x', '') or (not data.get('location_y', '') or (not data.get('nearby', ''))):
+            return JsonResponse({'error': 'parameter is missing'}, status=400)
+
         url = f"https://uz.easyway.info/ajax/en/{data.get('city', '')}/nearby/{data.get('location_x', '')}/{data.get('location_y', '')}/{data.get('nearby', '')}"
-        if not url:
-            return JsonResponse({'error': 'URL parameter is missing'}, status=400)
 
         headers = {
             'Accept': '*/*',
@@ -337,6 +344,7 @@ class BusById(APIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data.copy()
+
         key = data.get('key', None)
         if not key:
             return JsonResponse({'error': 'Bad request'}, status=400)
@@ -348,19 +356,27 @@ class BusById(APIView):
 
         given_time_str = decrypted_time_str
         try:
+            # Assuming given_time_str is in UTC
             given_time = datetime.strptime(given_time_str, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=pytz.UTC)
         except Exception as e:
             return JsonResponse({'error': "Incorrect key format"}, status=400)
-        now = datetime.now(pytz.UTC)
 
-        # Calculate the time difference
-        time_difference = now - given_time
+            # Convert given_time to Tashkent timezone
+        tashkent_timezone = pytz.timezone('Asia/Tashkent')
+        given_time_tashkent = given_time.astimezone(tashkent_timezone)
+
+        now_utc = datetime.now(pytz.UTC)
+        now_tashkent = now_utc.astimezone(tashkent_timezone)
+
+        # Calculate the time difference between given_time and now_tashkent in Tashkent time
+        time_difference = now_tashkent - given_time_tashkent
         if abs(time_difference) > timedelta(minutes=1):
             return JsonResponse({'error': 'Bad request'}, status=400)
 
-        url = f"https://api.rent-home.uz/api/proxy/?url=https://uz.easyway.info/ajax/en/tashkent/routeInfo/{data.get('id', '')}"
-        if not url:
+        if not data.get('id', None):
             return JsonResponse({'error': 'URL parameter is missing'}, status=400)
+
+        url = f"https://uz.easyway.info/ajax/en/tashkent/routeInfo/{data.get('id', '')}"
 
         headers = {
             'Accept': '*/*',
